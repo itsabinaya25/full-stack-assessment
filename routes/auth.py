@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session
+from flask import Blueprint, render_template, request, session, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database import db
@@ -161,6 +161,83 @@ def login():
             "success": False,
             "message": "Invalid email or password"
         }
+    logout_message = request.args.get("logout")
 
-    return render_template("login.html")
+    return render_template(
+        "login.html",
+        logout=logout_message
+    )
+    
+      
+@auth.route("/logout")
+def logout():
+    session.clear()
+    return {
+        "success":True,"message": "logged out successfully"
+    }
+# ===============================
+# FORGOT PASSWORD
+# ===============================
 
+@auth.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if request.method == "POST":
+
+        data = request.get_json()
+
+        if not data:
+            return {
+                "success": False,
+                "message": "Invalid request."
+            }
+
+        email = data.get("email", "").strip()
+        new_password = data.get("newPassword", "")
+
+        if not email or not new_password:
+            return {
+                "success": False,
+                "message": "Email and new password are required."
+            }
+
+        if len(new_password) < 6:
+            return {
+                "success": False,
+                "message": "Password must be at least 6 characters."
+            }
+
+        cursor = db.cursor()
+
+        query = "SELECT id FROM users WHERE email = %s"
+        cursor.execute(query, (email,))
+
+        user = cursor.fetchone()
+
+        if not user:
+            cursor.close()
+
+            return {
+                "success": False,
+                "message": "Email not registered."
+            }
+
+        hashed_password = generate_password_hash(new_password)
+
+        update_query = """
+            UPDATE users
+            SET password = %s
+            WHERE email = %s
+        """
+
+        cursor.execute(update_query, (hashed_password, email))
+        db.commit()
+
+        cursor.close()
+
+        return {
+            "success": True,
+            "message": "Password reset successfully."
+        }
+
+    return render_template("forgot_password.html")

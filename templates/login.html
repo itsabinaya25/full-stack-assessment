@@ -20,7 +20,9 @@
       <div class="auth-card">
         <h1>Log in</h1>
         <p class="subtitle">Enter your details to access your dashboard.</p>
-
+        {% if logout == "success" %}
+          <div class="logout-success">Logged out successfully</div>
+        {% endif %}
         <div class="alert" id="loginAlert"></div>
 
         <form id="loginForm" novalidate>
@@ -37,7 +39,9 @@
             <span class="field-error" id="passwordError"></span>
           </div>
 
-          <p class="form-links"><a href="#">Forgot password?</a></p>
+          <p class="form-links">
+            <a href="/forgot-password">Forgot password?</a>
+          </p>
 
           <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Sign In</button>
         </form>

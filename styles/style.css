@@ -453,6 +453,7 @@ a:hover {
   }
 }
 
+
 @media (max-width: 600px) {
   .auth-card {
     padding: 1.75rem 1.25rem;
@@ -467,4 +468,20 @@ a:hover {
   .dashboard-main {
     padding: 1.75rem 1rem 6rem;
   }
+}
+.logout-success {
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    margin: 20px 0;
+}
+
+#forgotAlert.password-success {
+    color: white !important;
+    font-size: 35px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    margin: 20px 0 !important;
+    line-height: 1.4 !important;
 }

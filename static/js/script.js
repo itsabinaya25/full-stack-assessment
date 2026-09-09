@@ -11,7 +11,13 @@ if (signupForm) {
         const email = document.getElementById("email").value.trim();
         const mobile = document.getElementById("mobile").value.trim();
         const password = document.getElementById("password").value;
+        const mobileError = document.getElementById("mobileError");
+        if (mobile.length !== 10 || !/^\d+$/.test(mobile)) {
+            mobileError.textContent = "Please enter valid number";
+            return;
+       }
 
+        mobileError.textContent = "";
         // Basic validation
         if (!name || !age || !address || !email || !mobile || !password) {
             alert("Please fill all the fields.");
@@ -128,3 +134,83 @@ if (uploadForm) {
         }
     });
 }
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        const response = await fetch("/logout");
+        const data = await response.json();
+
+        if (data.success) {
+            window.location.href = "/login?logout=success";
+        }
+    });
+}
+const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+
+if (forgotPasswordForm) {
+
+    forgotPasswordForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        const email = document.getElementById("forgotEmail").value.trim();
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        const alertBox = document.getElementById("forgotAlert");
+
+        if (!email || !newPassword || !confirmPassword) {
+            alertBox.textContent = "All fields are required.";
+            alertBox.style.display = "block";
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alertBox.textContent = "Password must be at least 6 characters.";
+            alertBox.style.display = "block";
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alertBox.textContent = "Passwords do not match.";
+            alertBox.style.display = "block";
+            return;
+        }
+
+        try {
+
+            const response = await fetch("/forgot-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    newPassword: newPassword
+                })
+            });
+
+            const data = await response.json();
+
+            alertBox.textContent = data.message;
+            alertBox.style.display = "block";
+
+            if (data.success) {
+                alertBox.classList.add("password-success")
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 3000);
+
+            }
+        } catch (error) {
+
+            alertBox.textContent = "Something went wrong. Please try again.";
+            alertBox.style.display = "block";
+        }
+
+    });
+
+}
+
+   
