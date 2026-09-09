@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up</title>
-<link rel="stylesheet" href="{{ url_for('styles', filename='style.css') }}">
+<link rel="stylesheet" href="/styles/style.css">
 </head>
 <body>
 
@@ -66,12 +66,12 @@
           <button type="submit" class="btn btn-primary" id="signupSubmitBtn">Create Account</button>
         </form>
 
-        <p class="auth-footer">Already have an account? <a href="/login">Log In</a></p>
+        <p class="auth-footer">Already have an account? <a href="templates/login.html">Log In</a></p>
       </div>
 
     </div>
   </div>
 
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="static/js/script.js"></script>
 </body>
 </html>
