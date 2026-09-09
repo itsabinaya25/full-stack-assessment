@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <div class="dashboard-page" id="dashboardPage">
+
+    <header class="dashboard-header">
+      <div class="brand"><span class="dot"></span>ASSESS.IO</div>
+      <div>
+        <span class="user-name" id="userName">{{ user_name|default('User') }}</span>
+        <button class="btn-logout" id="logoutBtn">Log Out</button>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+
+      <div class="welcome-banner">
+        <h1>Welcome, <span id="welcomeName">User</span> 👋</h1>
+        <p>Here's your dashboard. Upload or download files below.</p>
+      </div>
+      <section class="dashboard-card">
+        <h2>Upload Files</h2>
+        <p class="card-description">Allowed file types: PDF, PNG, JPG, JPEG.</p>
+
+        <div class="alert" id="uploadAlert"></div>
+
+        <form id="uploadForm" novalidate>
+          <div class="file-input-wrapper">
+            <label for="file1">File 1</label>
+            <input type="file" id="file1" name="file1" accept=".pdf,.png,.jpg,.jpeg">
+            <span class="field-error" id="file1Error"></span>
+          </div>
+
+          <div class="file-input-wrapper">
+            <label for="file2">File 2</label>
+            <input type="file" id="file2" name="file2" accept=".pdf,.png,.jpg,.jpeg">
+            <span class="field-error" id="file2Error"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+      </section>
+
+      <section class="dashboard-card">
+        <h2>Download Files</h2>
+        <p class="card-description">Download a sample test file from the server.</p>
+
+        <div class="alert" id="downloadAlert"></div>
+
+        <button type="button" class="btn btn-primary" id="downloadBtn">Download Test File</button>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/script.js"></script>
+</body>
+</html>
