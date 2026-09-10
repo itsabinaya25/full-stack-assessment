@@ -48,7 +48,7 @@ def dashboard():
 
 if __name__ == "__main__":
     app.run(debug=True)
-    @app.route("/current-user")
+@app.route("/current-user")
 def current_user():
     if "user_id" not in session:
         return {
