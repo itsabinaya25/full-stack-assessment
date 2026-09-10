@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, session, jsonify
 from werkzeug.utils import secure_filename
 from database import supabase
@@ -15,9 +14,13 @@ def allowed_file(filename):
     )
 
 
+# ==================== UPLOAD ====================
+
 @files.route("/upload", methods=["POST"])
 def upload_files():
+
     try:
+
         # Check login
         if "user_id" not in session:
             return jsonify({
@@ -26,7 +29,9 @@ def upload_files():
             })
 
         user_id = session["user_id"]
-        user_name = secure_filename(session.get("user_name", "User"))
+        user_name = secure_filename(
+            session.get("user_name", "User")
+        )
 
         uploaded_files = [
             request.files.get("file1"),
@@ -34,6 +39,7 @@ def upload_files():
         ]
 
         uploaded_count = 0
+        duplicate_count = 0
 
         for file in uploaded_files:
 
@@ -54,10 +60,36 @@ def upload_files():
             # Get extension
             extension = original_name.rsplit(".", 1)[1].lower()
 
-            # Create unique filename using logged-in user's name
+            # Create filename
             filename = f"{user_name}_{extension}_{original_name}"
 
-            # Read uploaded file into memory
+            # Check whether file already exists
+            try:
+
+                existing_files = (
+                    supabase.storage
+                    .from_("uploads")
+                    .list()
+                )
+
+                file_exists = any(
+                    item.get("name") == filename
+                    for item in existing_files
+                )
+
+            except Exception as e:
+
+                print("DUPLICATE CHECK ERROR:", repr(e))
+                file_exists = False
+
+            # If duplicate, skip it
+            if file_exists:
+
+                print("DUPLICATE FILE SKIPPED:", filename)
+                duplicate_count += 1
+                continue
+
+            # Read file
             file_data = file.read()
 
             if not file_data:
@@ -67,21 +99,17 @@ def upload_files():
                 })
 
             # Upload to Supabase Storage
-            response = (
-                supabase.storage
-                .from_("uploads")
-                .upload(
-                    filename,
-                    file_data,
-                    {
-                        "content-type": file.content_type or "application/octet-stream"
-                    }
-                )
+            supabase.storage.from_("uploads").upload(
+                filename,
+                file_data,
+                {
+                    "content-type":
+                        file.content_type
+                        or "application/octet-stream"
+                }
             )
 
-            print("STORAGE UPLOAD RESPONSE:", response)
-
-            # Save file metadata in Supabase database
+            # Save metadata
             supabase.table("uploaded_files").insert({
                 "filename": filename,
                 "file_type": extension,
@@ -90,35 +118,62 @@ def upload_files():
 
             uploaded_count += 1
 
-        # No files selected
-        if uploaded_count == 0:
+        # Nothing selected
+        if uploaded_count == 0 and duplicate_count == 0:
+
             return jsonify({
                 "success": False,
                 "message": "Please select at least one file."
             })
 
+        # Only duplicate files
+        if uploaded_count == 0 and duplicate_count > 0:
+
+            return jsonify({
+                "success": False,
+                "message": "File already exists. Duplicate file was not uploaded."
+            })
+
+        # Some uploaded + some duplicate
+        if duplicate_count > 0:
+
+            return jsonify({
+                "success": True,
+                "message":
+                    f"{uploaded_count} file(s) uploaded. "
+                    f"{duplicate_count} duplicate file(s) skipped."
+            })
+
+        # Normal upload
         return jsonify({
             "success": True,
-            "message": "Files uploaded successfully."
+            "message": f"{uploaded_count} file(s) uploaded successfully."
         })
 
     except Exception as e:
+
         print("UPLOAD ERROR:", repr(e))
 
         return jsonify({
             "success": False,
-            "message": str(e)
+            "message": "Upload failed."
         }), 500
 
 
+# ==================== DOWNLOAD ====================
+
 @files.route("/download")
 def download_file():
+
     try:
+
         file_name = request.args.get("filename")
 
+        # Default test file
         if not file_name:
             file_name = "test_file.txt"
 
+        # Download from Supabase Storage
         file_data = (
             supabase.storage
             .from_("uploads")
@@ -130,15 +185,16 @@ def download_file():
             200,
             {
                 "Content-Type": "application/octet-stream",
-                "Content-Disposition": f'attachment; filename="{file_name}"'
+                "Content-Disposition":
+                    f'attachment; filename="{file_name}"'
             }
         )
 
     except Exception as e:
+
         print("DOWNLOAD ERROR:", repr(e))
 
         return jsonify({
             "success": False,
             "message": "File not found."
         }), 404
-
