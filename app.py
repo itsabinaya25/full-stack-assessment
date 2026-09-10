@@ -45,11 +45,9 @@ def dashboard():
         user_name=session.get("user_name", "User")
     )
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
 @app.route("/current-user")
 def current_user():
+
     if "user_id" not in session:
         return {
             "success": False,
@@ -60,3 +58,9 @@ def current_user():
         "success": True,
         "user_name": session.get("user_name", "User")
     }
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+    
