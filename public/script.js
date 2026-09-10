@@ -30,7 +30,7 @@ if (signupForm) {
             alert("Password must be at least 8 characters.");
             return;
         }
-           const response = await fetch("/signup", {
+           const response = await fetch(`${API_URL}/signup`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -49,7 +49,7 @@ if (signupForm) {
 
         if (result.success) {
             alert("Account created successfully!");
-            window.location.href = "/login";
+            window.location.href = "/login.html";
         } else {
             alert(result.message);
         }
