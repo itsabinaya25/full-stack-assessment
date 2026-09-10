@@ -274,3 +274,36 @@ if (forgotPasswordForm) {
     });
 
 }
+// ==================== LOAD USER NAME ====================
+
+const userName = document.getElementById("userName");
+const welcomeName = document.getElementById("welcomeName");
+
+if (userName || welcomeName) {
+
+    fetch(`${API_URL}/current-user`, {
+        method: "GET",
+        credentials: "include"
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.success) {
+
+            if (userName) {
+                userName.textContent = data.user_name;
+            }
+
+            if (welcomeName) {
+                welcomeName.textContent = data.user_name;
+            }
+
+        } else {
+            console.log("User not logged in");
+        }
+
+    })
+    .catch(error => {
+        console.error("Error loading user:", error);
+    });
+}

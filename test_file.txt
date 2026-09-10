@@ -1,0 +1,10 @@
+Full Stack Assessment - Test File
+
+This is a test file for the file download functionality.
+
+Project: Full Stack Assessment
+Backend: Flask
+Database: Supabase PostgreSQL
+Storage: Supabase Storage
+
+Download test successful.
