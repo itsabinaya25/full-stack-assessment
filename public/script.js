@@ -121,10 +121,12 @@ const downloadBtn = document.getElementById("downloadBtn");
 
 if (downloadBtn) {
     downloadBtn.addEventListener("click", function () {
-        window.location.href = `${API_URL}/download`;
+
+        window.location.href =
+            `${API_URL}/download?filename=test_file.txt`;
+
     });
 }
-
 
 // ==================== UPLOAD ====================
 
@@ -271,33 +273,4 @@ if (forgotPasswordForm) {
 
     });
 
-}
-// ==================== LOAD USER NAME ====================
-
-const userName = document.getElementById("userName");
-const welcomeName = document.getElementById("welcomeName");
-
-if (userName || welcomeName) {
-    fetch(`${API_URL}/current-user`, {
-        method: "GET",
-        credentials: "include"
-    })
-    .then(response => response.json())
-    .then(data => {
-
-        if (data.success) {
-
-            if (userName) {
-                userName.textContent = data.user_name;
-            }
-
-            if (welcomeName) {
-                welcomeName.textContent = data.user_name;
-            }
-
-        }
-    })
-    .catch(error => {
-        console.error("Error loading user:", error);
-    });
 }
