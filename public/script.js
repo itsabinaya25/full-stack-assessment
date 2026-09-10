@@ -1,3 +1,5 @@
+
+const API_URL = "https://full-stack-backend-y51w.onrender.com";
 const signupForm = document.getElementById("signupForm");
 
 if (signupForm) {
