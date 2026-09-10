@@ -1,26 +1,30 @@
-
 const API_URL = "https://full-stack-backend-y51w.onrender.com";
+
+
+// ==================== SIGNUP ====================
+
 const signupForm = document.getElementById("signupForm");
 
 if (signupForm) {
     signupForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
-        // Get values
         const name = document.getElementById("name").value.trim();
         const age = document.getElementById("age").value.trim();
         const address = document.getElementById("address").value.trim();
         const email = document.getElementById("email").value.trim();
         const mobile = document.getElementById("mobile").value.trim();
         const password = document.getElementById("password").value;
+
         const mobileError = document.getElementById("mobileError");
+
         if (mobile.length !== 10 || !/^\d+$/.test(mobile)) {
             mobileError.textContent = "Please enter valid number";
             return;
-       }
+        }
 
         mobileError.textContent = "";
-        // Basic validation
+
         if (!name || !age || !address || !email || !mobile || !password) {
             alert("Please fill all the fields.");
             return;
@@ -30,32 +34,42 @@ if (signupForm) {
             alert("Password must be at least 8 characters.");
             return;
         }
-           const response = await fetch(`${API_URL}/signup`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name: name,
-                age: age,
-                address: address,
-                email: email,
-                mobile: mobile,
-                password: password
-            })
-        });
 
-        const result = await response.json();
+        try {
+            const response = await fetch(`${API_URL}/signup`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    age: age,
+                    address: address,
+                    email: email,
+                    mobile: mobile,
+                    password: password
+                })
+            });
 
-        if (result.success) {
-            alert("Account created successfully!");
-            window.location.href = "/login.html";
-        } else {
-            alert(result.message);
+            const result = await response.json();
+
+            if (result.success) {
+                alert("Account created successfully!");
+                window.location.href = "/login.html";
+            } else {
+                alert(result.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Unable to connect to the backend.");
         }
     });
 }
 
+
+// ==================== LOGIN ====================
 
 const loginForm = document.getElementById("loginForm");
 
@@ -71,37 +85,48 @@ if (loginForm) {
             return;
         }
 
-        const response = await fetch("/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password
-            })
-        });
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
 
-        const result = await response.json();
+            const result = await response.json();
 
-        if (result.success) {
-            alert("Login successful!");
-            window.location.href = "/dashboard";
-        } else {
-            alert(result.message);
+            if (result.success) {
+                alert("Login successful!");
+                window.location.href = "/dashboard.html";
+            } else {
+                alert(result.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Unable to connect to the backend.");
         }
     });
 }
 
 
+// ==================== DOWNLOAD ====================
+
 const downloadBtn = document.getElementById("downloadBtn");
 
 if (downloadBtn) {
     downloadBtn.addEventListener("click", function () {
-        window.location.href = "/download";
+        window.location.href = `${API_URL}/download`;
     });
 }
 
+
+// ==================== UPLOAD ====================
 
 const uploadForm = document.getElementById("uploadForm");
 
@@ -122,37 +147,63 @@ if (uploadForm) {
         formData.append("file1", file1);
         formData.append("file2", file2);
 
-        const response = await fetch("/upload", {
-            method: "POST",
-            body: formData
-        });
+        try {
+            const response = await fetch(`${API_URL}/upload`, {
+                method: "POST",
+                credentials: "include",
+                body: formData
+            });
 
-        const result = await response.json();
+            const result = await response.json();
 
-        if (result.success) {
-            alert("Files uploaded successfully!");
-        } else {
-            alert(result.message);
+            if (result.success) {
+                alert("Files uploaded successfully!");
+            } else {
+                alert(result.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Unable to connect to the backend.");
         }
     });
 }
+
+
+// ==================== LOGOUT ====================
+
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-        const response = await fetch("/logout");
-        const data = await response.json();
+    logoutBtn.addEventListener("click", async function () {
 
-        if (data.success) {
-            window.location.href = "/login?logout=success";
+        try {
+            const response = await fetch(`${API_URL}/logout`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = "/login.html?logout=success";
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Unable to logout.");
         }
     });
 }
+
+
+// ==================== FORGOT PASSWORD ====================
+
 const forgotPasswordForm = document.getElementById("forgotPasswordForm");
 
 if (forgotPasswordForm) {
 
-    forgotPasswordForm.addEventListener("submit", async (event) => {
+    forgotPasswordForm.addEventListener("submit", async function (event) {
 
         event.preventDefault();
 
@@ -182,8 +233,9 @@ if (forgotPasswordForm) {
 
         try {
 
-            const response = await fetch("/forgot-password", {
+            const response = await fetch(`${API_URL}/forgot-password`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -199,20 +251,24 @@ if (forgotPasswordForm) {
             alertBox.style.display = "block";
 
             if (data.success) {
-                alertBox.classList.add("password-success")
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 3000);
 
+                alertBox.classList.add("password-success");
+
+                setTimeout(() => {
+                    window.location.href = "/login.html";
+                }, 3000);
             }
+
         } catch (error) {
 
-            alertBox.textContent = "Something went wrong. Please try again.";
+            console.error(error);
+
+            alertBox.textContent =
+                "Something went wrong. Please try again.";
+
             alertBox.style.display = "block";
         }
 
     });
 
 }
-
-   
