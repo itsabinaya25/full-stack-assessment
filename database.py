@@ -1,10 +1,13 @@
-import mysql.connector
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
-from config import Config
+load_dotenv(override=True)
 
-db = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    password="jeeva2325",
-    database="fullstack_app"
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase: Client = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
 )

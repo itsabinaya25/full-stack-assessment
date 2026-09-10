@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, session, redirect
+from flask import Blueprint, render_template, request, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from database import db
+from database import supabase
 
 
 auth = Blueprint("auth", __name__)
@@ -73,26 +73,14 @@ def signup():
 
         try:
 
-            cursor = db.cursor()
-
-            query = """
-                INSERT INTO users
-                (name, age, address, email, mobile, password)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """
-
-            values = (
-                name,
-                age,
-                address,
-                email,
-                mobile,
-                hashed_password
-            )
-
-            cursor.execute(query, values)
-            db.commit()
-            cursor.close()
+            response = supabase.table("users").insert({
+                "name": name,
+                "age": age,
+                "address": address,
+                "email": email,
+                "mobile": mobile,
+                "password": hashed_password
+            }).execute()
 
             return {
                 "success": True,
@@ -105,7 +93,7 @@ def signup():
 
             return {
                 "success": False,
-                "message": "Email may already be registered."
+                "message": str(e)
             }
 
     return render_template("signup.html")
@@ -137,17 +125,33 @@ def login():
                 "message": "Email and password are required."
             }
 
-        cursor = db.cursor(dictionary=True)
+        try:
 
-        query = "SELECT * FROM users WHERE email = %s"
+            response = (
+                supabase
+                .table("users")
+                .select("*")
+                .eq("email", email)
+                .execute()
+            )
 
-        cursor.execute(query, (email,))
+            users = response.data
 
-        user = cursor.fetchone()
+            user = users[0] if users else None
 
-        cursor.close()
+        except Exception as e:
 
-        if user and check_password_hash(user["password"], password):
+            print("LOGIN ERROR:", e)
+
+            return {
+                "success": False,
+                "message": "Database error."
+            }
+
+        if user and check_password_hash(
+            user["password"],
+            password
+        ):
 
             session["user_id"] = user["id"]
             session["user_name"] = user["name"]
@@ -161,20 +165,30 @@ def login():
             "success": False,
             "message": "Invalid email or password"
         }
+
     logout_message = request.args.get("logout")
 
     return render_template(
         "login.html",
         logout=logout_message
     )
-    
-      
+
+
+# ===============================
+# LOGOUT
+# ===============================
+
 @auth.route("/logout")
 def logout():
+
     session.clear()
+
     return {
-        "success":True,"message": "logged out successfully"
+        "success": True,
+        "message": "Logged out successfully"
     }
+
+
 # ===============================
 # FORGOT PASSWORD
 # ===============================
@@ -207,37 +221,49 @@ def forgot_password():
                 "message": "Password must be at least 6 characters."
             }
 
-        cursor = db.cursor()
+        try:
 
-        query = "SELECT id FROM users WHERE email = %s"
-        cursor.execute(query, (email,))
+            response = (
+                supabase
+                .table("users")
+                .select("id")
+                .eq("email", email)
+                .execute()
+            )
 
-        user = cursor.fetchone()
+            if not response.data:
 
-        if not user:
-            cursor.close()
+                return {
+                    "success": False,
+                    "message": "Email not registered."
+                }
+
+            hashed_password = generate_password_hash(
+                new_password
+            )
+
+            (
+                supabase
+                .table("users")
+                .update({
+                    "password": hashed_password
+                })
+                .eq("email", email)
+                .execute()
+            )
+
+            return {
+                "success": True,
+                "message": "Password reset successfully."
+            }
+
+        except Exception as e:
+
+            print("FORGOT PASSWORD ERROR:", e)
 
             return {
                 "success": False,
-                "message": "Email not registered."
+                "message": "Unable to reset password."
             }
-
-        hashed_password = generate_password_hash(new_password)
-
-        update_query = """
-            UPDATE users
-            SET password = %s
-            WHERE email = %s
-        """
-
-        cursor.execute(update_query, (hashed_password, email))
-        db.commit()
-
-        cursor.close()
-
-        return {
-            "success": True,
-            "message": "Password reset successfully."
-        }
 
     return render_template("forgot_password.html")
